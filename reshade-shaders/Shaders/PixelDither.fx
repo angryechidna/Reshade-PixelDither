@@ -69,14 +69,14 @@ struct Colors{
 float indexValue(float2 uv, float2 ratio) {
 	float2 t = (uv) / (4 * ratio);
 	float4 ret = tex2D(ditherTex, t);
-	return (1.0 - float(ret.r));
+	return (1.1 - float(ret.r));
 }
 
 float hueDistance(float4 col1, float4 col2) {
-	float tempr = col1.r - col2.r;
-	float tempg = col1.g - col2.g;
-	float tempb = col1.b - col2.b; 
-	return sqrt((tempr * tempr) + (tempg * tempg) + (tempb * tempb));
+	float tempr = abs(col1.r - col2.r);
+	float tempg = abs(col1.g - col2.g);
+	float tempb = abs(col1.b - col2.b);
+	return (tempr + tempg + tempb);
 }
 
 Colors closestColors(float4 color) {
@@ -109,9 +109,9 @@ Colors closestColors(float4 color) {
 float4 dither(float4 color, float d) {
 	Colors col = closestColors(color);
 	float hueDiff = hueDistance(color, col.col1);
-	if(hueDiff > (0.7 - (d/2)))
-		return col.col2;
-	return col.col1;
+	if(hueDiff < (d))
+		return col.col1;
+	return col.col2;
 }
 
 float4 PS_PixelDither (float4 position : SV_Position, float2 texcoord : TEXCOORD) : SV_Target
@@ -125,8 +125,8 @@ float4 PS_PixelDither (float4 position : SV_Position, float2 texcoord : TEXCOORD
 	return finalPix;
 }
 
-technique DitherPixel{
-	pass DitherPixel{
+technique PixelDither{
+	pass PixelDither{
 		VertexShader=PostProcessVS;
 		PixelShader = PS_PixelDither;
 	}
